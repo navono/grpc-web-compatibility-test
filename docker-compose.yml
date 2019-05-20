@@ -1,4 +1,4 @@
-version: "3"
+version: '3'
 services:
   echo-server:
     build:
@@ -7,49 +7,64 @@ services:
     command:
       - --grpc_port=9090
     expose:
-      - "9090"
+      - '9090'
   grpcwebproxy:
     build:
       context: ./
       dockerfile: ./proxy/grpcwebproxy/Dockerfile
     ports:
-      - "8080:8080"
+      - '8080:8080'
     command:
       - --backend_addr=dns:///echo-server:9090
       - --backend_tls_noverify=true
       - --run_tls_server=false
       - --use_websockets=true
+      - --allow_all_origins=true
     links:
       - echo-server
+  inprocess:
+    build:
+      context: ./
+      dockerfile: ./proxy/inprocess/Dockerfile
+    ports:
+      - '8080:8080'
+    command:
+      - --grpc_port=8080
   envoy:
     build:
       context: ./
       dockerfile: ./proxy/envoy/Dockerfile
     ports:
-      - "8080:8080"
+      - '8080:8080'
     links:
       - echo-server
+  grpcwsgi:
+    build:
+      context: ./
+      dockerfile: ./proxy/grpcwsgi/Dockerfile
+    ports:
+      - '8080:8080'
   improbable:
     build:
       context: ./
       dockerfile: ./frontend/improbable/Dockerfile
     ports:
-      - "80:10000"
+      - '80:10000'
   improbable-ws:
     build:
       context: ./
       dockerfile: ./frontend/improbable-ws/Dockerfile
     ports:
-      - "80:10000"
+      - '80:10000'
   grpcweb:
     build:
       context: ./
       dockerfile: ./frontend/grpcweb/Dockerfile
     ports:
-      - "80:10000"
+      - '80:10000'
   grpcwebtext:
     build:
       context: ./
       dockerfile: ./frontend/grpcwebtext/Dockerfile
     ports:
-      - "80:10000"
+      - '80:10000'

@@ -1,4 +1,5 @@
 # grpc-web-compatibility-test
+[![CircleCI](https://img.shields.io/circleci/project/github/johanbrandhorst/grpc-web-compatibility-test/master.svg?style=flat-square)](https://circleci.com/gh/johanbrandhorst/grpc-web-compatibility-test)
 
 Test various implementations of gRPC-Web Clients with various implementations of gRPC-Web proxies
 
@@ -43,13 +44,26 @@ Test various implementations of gRPC-Web Clients with various implementations of
   It supports both Fetch/XHR and websockets transports.
   It supports the `application/grpc-web` content-type only.
 
+- `inprocess`
+
+  The same as `grpcwebproxy`, but running as an in-process proxy to a Go gRPC
+  server.
+  It supports both Fetch/XHR and websockets transports.
+  It supports the `application/grpc-web` content-type only.
+
 - `envoy`
 
   The Envoy Proxy HTTP filter implementation created for the `grpc/grpc-web` project,
   available at https://github.com/envoyproxy/envoy/tree/master/source/extensions/filters/http/grpc_web.
   It supports XHR and both the `application/grpc-web` and `application/grpc-web-text` content-types.
 
-Footnote: The websocket transport is not part of the grpc-web spec.
+- `grpcwsgi`
+
+  A Python WSGI compatible implementation of gRPC-Web, available at https://github.com/public/grpcWSGI.
+  It supports Fetch/XHR only.
+  It supports `application/grpc-web` only.
+
+Note: The websocket transport is not part of the grpc-web spec.
 
 ## Requirements
 
@@ -61,7 +75,7 @@ Footnote: The websocket transport is not part of the grpc-web spec.
    ```bash
    $ docker-compose up -d echo-server
    ```
-1. Start the proxy of your choice (`envoy` or `grpcwebproxy`)
+1. Start the proxy of your choice (`envoy`, `grpcwebproxy`, `inprocess`, `grpcwsgi`)
    ```bash
    $ docker-compose up -d grpcwebproxy
    ```
@@ -75,12 +89,17 @@ Footnote: The websocket transport is not part of the grpc-web spec.
    $ docker-compose down
    ```
 
+Note: The `inprocess` and `grpcwsgi` proxies do not require `echo-server` to be running,
+they include the server themselves.
+
 ## Compatbility status
 
 | Proxy / Client | `improbable` | `grpcweb` | `grpcwebtext` | `improbable-ws` [1] |
 | -------------- | ------------ | --------- | ------------- | ------------------- |
 | `envoy`        | ✔️           | ✔️️       | ✔️            | ❌                  |
 | `grpcwebproxy` | ✔️️          | ✔️        | ✔️            | ✔️️                 |
+| `inprocess` | ✔️️          | ✔️        | ✔️            | ✔️️                 |
+| `grpcwsgi` | ✔️️          | ✔️        | ❌             | ❌                 |
 
 1. `improbable-ws` implements a non-standard websocket transport.
 
@@ -92,7 +111,8 @@ Footnote: The websocket transport is not part of the grpc-web spec.
 | `grpcweb`           | ✔️ ️                   | ❌                          | ✔️    | ❌ [1]         | ❌                    |
 | `grpcwebtext`       | ❌ ️                   | ✔️️                         | ✔️    | ✔️             | ❌                    |
 | `improbable-ws` [2] | ✔️ ️                   | ❌                          | ✔️    | ✔️             | ✔️️                   |
+| `grpcwsgi`           | ✔️ ️                   | ❌                          | ✔️    | ✔️             | ❌                    |
 
 1. `grpcweb` allows server streaming methods to be called, but it doesn't return data until the stream has closed.
    [(issue)](https://github.com/grpc/grpc-web/issues/344)
-2. `improbable-ws` implements a non-standard websocket transport for client-side and bi-directional streams.
+1. `improbable-ws` implements a non-standard websocket transport for client-side and bi-directional streams.
