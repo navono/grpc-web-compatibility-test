@@ -11,29 +11,24 @@ Test various implementations of gRPC-Web Clients with various implementations of
 
   The client created by Improbable, leveraging Fetch/XHR,
   available at https://github.com/improbable-eng/grpc-web/tree/master/ts.
-  It uses the `application/grpc-web` content-type.
 
-- `grpcweb`
+- `grpcWeb`
 
   The client created by Google and the gRPC organisation,
   available at https://github.com/grpc/grpc-web, generated with `mode=grpcweb`.
-  It uses XHR and the `application/grpc-web` content-type.
-  It does not support server-side streaming.
 
-- `grpcwebtext`
+- `grpcWebText`
 
   The client created by Google and the gRPC organisation,
   available at https://github.com/grpc/grpc-web, generated with `mode=grpcwebtext`.
-  It uses XHR and the `application/grpc-web-text` content-type.
 
 #### Non-gRPC-Web clients tested
 
-- `improbable-ws`
+- `improbableWS`
 
   The client created by Improbable, leveraging an experimental websocket transport,
   available at https://github.com/improbable-eng/grpc-web/tree/master/ts.
-  It uses the `application/grpc-web` content-type. It is not part of the
-  gRPC-Web spec, and not recommended for production use.
+  It is not part of the gRPC-Web spec, and not recommended for production use.
 
 ### Proxies
 
@@ -41,29 +36,23 @@ Test various implementations of gRPC-Web Clients with various implementations of
 
   The proxy created by Improbable,
   available at https://github.com/improbable-eng/grpc-web/tree/master/go/grpcwebproxy.
-  It supports both Fetch/XHR and websockets transports.
-  It supports the `application/grpc-web` content-type only.
 
 - `inprocess`
 
   The same as `grpcwebproxy`, but running as an in-process proxy to a Go gRPC
   server.
-  It supports both Fetch/XHR and websockets transports.
-  It supports the `application/grpc-web` content-type only.
 
 - `envoy`
 
   The Envoy Proxy HTTP filter implementation created for the `grpc/grpc-web` project,
   available at https://github.com/envoyproxy/envoy/tree/master/source/extensions/filters/http/grpc_web.
-  It supports XHR and both the `application/grpc-web` and `application/grpc-web-text` content-types.
 
 - `grpcwsgi`
 
-  A Python WSGI compatible implementation of gRPC-Web, available at https://github.com/public/grpcWSGI.
-  It supports Fetch/XHR only.
-  It supports `application/grpc-web` only.
+  A Python WSGI compatible implementation of gRPC-Web, available at
+  https://github.com/public/grpcWSGI.
 
-Note: The websocket transport is not part of the grpc-web spec.
+Note: The websocket transport is not part of the gRPC-Web spec.
 
 ## Requirements
 
@@ -71,48 +60,108 @@ Note: The websocket transport is not part of the grpc-web spec.
 
 ## Running
 
-1. Start the gRPC server
-   ```bash
-   $ docker-compose up -d echo-server
-   ```
-1. Start the proxy of your choice (`envoy`, `grpcwebproxy`, `inprocess`, `grpcwsgi`)
+1. Start the server implementation of your choice (`envoy`, `grpcwebproxy`, `inprocess`, `grpcwsgi`)
    ```bash
    $ docker-compose up -d grpcwebproxy
    ```
-1. Start the frontend of your choice (`improbable`, `improbable-ws`, `grpcweb`, `grpcwebtext`)
+2. Run the frontend tests of your choice (`improbable`, `improbableWS`, `grpcWeb`, `grpcWebtext`).
+    Use the name of the chosen proxy in the `grpc-host` flag.
    ```bash
-   $ docker-compose up -d improbable
-   ```
-1. Open the browser to http://localhost, watch the browser console for output.
-1. Don't forget to kill the containers afterwards
-   ```bash
-   $ docker-compose down
+   $ docker-compose run frontend karma:improbable --grpc-host=http://grpcwebproxy:8080
    ```
 
 Note: The `inprocess` and `grpcwsgi` proxies do not require `echo-server` to be running,
-they include the server themselves.
+they include the server themselves. `envoy` and `grpcwebproxy` will automatically start
+the `echo-server` container on up.
 
-## Compatbility status
+## Proxy/Client compatbility status
 
-| Proxy / Client | `improbable` | `grpcweb` | `grpcwebtext` | `improbable-ws` [1] |
+| Proxy / Client | `improbable` | `grpcWeb` | `grpcWebText` | `improbableWS` [1] |
 | -------------- | ------------ | --------- | ------------- | ------------------- |
-| `envoy`        | ✔️           | ✔️️       | ✔️            | ❌                  |
+| `envoy`        | ✔️           | ✔️️       | ✔️            | ❌                   |
 | `grpcwebproxy` | ✔️️          | ✔️        | ✔️            | ✔️️                 |
-| `inprocess` | ✔️️          | ✔️        | ✔️            | ✔️️                 |
-| `grpcwsgi` | ✔️️          | ✔️        | ❌             | ❌                 |
+| `inprocess`    | ✔️️          | ✔️        | ✔️            | ✔️️                 |
+| `grpcwsgi`     | ❌            | ❌         | ❌             | ❌                   |
 
 1. `improbable-ws` implements a non-standard websocket transport.
 
-## Capability matrix
+## Client capability matrix
 
 | Client / Feature    | `application/grpc-web` | `application/grpc-web-text` | Unary | Server Streams | Client+Bidi streaming |
 | ------------------- | ---------------------- | --------------------------- | ----- | -------------- | --------------------- |
-| `improbable`        | ✔️ ️                   | ❌                          | ✔️    | ✔️             | ❌                    |
-| `grpcweb`           | ✔️ ️                   | ❌                          | ✔️    | ❌ [1]         | ❌                    |
-| `grpcwebtext`       | ❌ ️                   | ✔️️                         | ✔️    | ✔️             | ❌                    |
-| `improbable-ws` [2] | ✔️ ️                   | ❌                          | ✔️    | ✔️             | ✔️️                   |
-| `grpcwsgi`           | ✔️ ️                   | ❌                          | ✔️    | ✔️             | ❌                    |
+| `improbable`        | ✔️ ️                   | ❌                           | ✔️    | ✔️             | ❌                     |
+| `grpcWeb`           | ✔️ ️                   | ❌                           | ✔️    | ❌ [1]          | ❌                     |
+| `grpcWebText`       | ❌ ️                    | ✔️️                         | ✔️    | ✔️             | ❌                     |
+| `improbableWS` [2] | ✔️ ️                   | ❌                           | ✔️    | ✔️             | ✔️️                   |
+| `grpcwsgi`          | ✔️ ️                   | ❌                           | ✔️    | ✔️             | ❌                     |
 
-1. `grpcweb` allows server streaming methods to be called, but it doesn't return data until the stream has closed.
+1. `grpcWeb` allows server streaming methods to be called, but it doesn't return data until the stream has closed.
    [(issue)](https://github.com/grpc/grpc-web/issues/344)
-1. `improbable-ws` implements a non-standard websocket transport for client-side and bi-directional streams.
+2. `improbable-ws` implements a non-standard websocket transport for client-side and bi-directional streams.
+
+## Building
+
+Most of the build is managed by docker-compose but you may also want to manually rebuild some
+other things sometimes. Makefile commands are provided for building the protobuf bindings for
+all implementations and for rebuilding the Envoy container used in CI as this needs additional
+configuration.
+
+To rebuild the protobuf bindings just run `make generate` and commit the new bindings. You
+will probably only need to do this when adding a new implementation.
+
+To rebuild the Envoy CI image, run `make envoy-circle-image`. If you happen to be a contributor
+you'll also be able to do `docker push public/grpcweb-testing-envoy:latest` to push the new image
+to Docker Hub.
+
+## Running tests in your local browser
+
+### Requirements
+
+`node`, `npm`.
+
+### Installation
+
+Install the test suit locally:
+
+```bash
+$ cd frontend && npm install .
+```
+
+### Running
+
+Start the proxy and server of your choice:
+
+```bash
+$ docker-compose up -d grpcwebproxy
+```
+
+This will give you a server listening on port `8080` on `localhost`.
+
+The tests are run from the `frontend` folder. Run the test of your choice via `npx`:
+
+```bash
+$ npx grunt karma:grpcWebText --grpc-host=http://localhost:8080
+```
+
+This will launch a headless Chrome instance and start running the tests in it.
+Look in the terminal you launched the tests from to see if the tests passed.
+
+To run the tests in a visual browser, edit the `browsers` part of the
+[karma config](./frontend/karma.conf.js) to `Chrome`.
+
+If you want to debug the tests, you can open the debug tab in the karma page in
+Chrome and then use your browser devtools to poke around.
+
+### Running with other browsers
+
+Install the karma launcher for the browser you want e.g. for Firefox:
+
+```bash
+$ npm install karma-firefox-launcher
+```
+
+Change the `browsers` config to `Firefox` and run the tests again:
+
+```bash
+$ npx grunt karma:grpcWebText --grpc-host=http://localhost:8080
+```
